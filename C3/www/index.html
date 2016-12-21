@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!--
+        Customize the content security policy in the meta tag below as needed. Add 'unsafe-inline' to default-src to enable inline JavaScript.
+        For details, see http://go.microsoft.com/fwlink/?LinkID=617521
+    -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'unsafe-inline' 'self' data: gap: https://ssl.gstatic.com http://en.lichess.org 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *; connect-src *">
+
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width">
+    <title>C3</title>
+
+    <script src="scripts/jquery-2.1.1.min.js"></script>
+    <script src="scripts/jquery.mobile-1.4.5.min.js"></script>
+    <script src="scripts/chessboard-0.3.0.js"></script>
+
+    <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css">
+    <link rel="stylesheet" href="css/chessboard-0.3.0.css">
+
+    <style>
+        .ui-page-theme-a {
+            background: #ffffff;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+
+</head>
+<body>
+    <div data-role="page" id="home" data-theme="a">
+
+        <div data-role="header">
+            <h1>Chesstronic</h1>
+        </div>
+
+        <div data-role="main" class="ui-content">
+            <a href="#machine" class="ui-btn">Play Machine</a>
+            <a href="#myGames" class="ui-btn">My Games</a>
+        </div>
+
+    </div>
+    <div data-role="page" id="myGames" data-theme="a">
+
+        <div data-role="header">
+            <h1>My Games</h1>
+        </div>
+
+        <div data-role="main" class="ui-content">
+            <ul data-role="listview" data-theme="a" id="gameList">
+                <li><a href="item1.html">Item1</a></li>
+                <li><a href="item2.html">item2</a></li>
+            </ul>
+        </div>
+
+    </div>
+    <script>
+
+        $(document).on('pagebeforeshow', '#myGames', function () {
+
+            $("#gameList").html("");
+
+            $('#gameList').on('click', 'a', function () {
+                console.log("connecting to game with id = " + $(this).attr('data-gameid'));
+                gameConnect($(this).attr('data-gameid'));
+            });
+
+            var xhttp = new XMLHttpRequest();
+            var url = "http://en.lichess.org/account/info/";
+            var bustCache = '?' + new Date().getTime();
+            xhttp.open("GET", url + bustCache, true);
+
+            // send the proper header information along with the request
+            xhttp.setRequestHeader("Accept", "application/vnd.lichess.v1+json");
+            xhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    games = JSON.parse(xhttp.responseText).nowPlaying;
+
+                    for (var i = 0; i < games.length; i++) {
+                        $("#gameList").append("<li><a href='#chessboard' data-gameid=" + games[i].fullId + ">" + games[i].fullId + "</a></li>");
+                        $("#gameList").listview('refresh');
+                    }
+
+                    //$("#gameList").enhanceWithin(); // adds styling to dynamically loaded content
+                }
+            };
+            xhttp.send();
+
+        });
+
+    </script>
+    <div data-role="page" id="machine" data-theme="a">
+        <div data-role="header">
+            <h1>Machine</h1>
+        </div>
+
+        <div data-role="panel" id="loginPanel">
+            <form>
+                <input type="text" id="username" name="username" placeholder="Username" value="lanyon" required>
+                <input type="password" id="password" name="password" placeholder="Password" value="|LANy0n|" required>
+                <button id="login-btn">Login</button>
+            </form>
+        </div>
+
+        <div data-role="main" class="ui-content">
+            <a href="#loginPanel" id="login-link" class="ui-btn ui-btn-inline">Login</a>
+            <button id="logout-btn" class="hidden" data-inline="true">Logout</button>
+            <!--<button id="getUser-btn">getUser</button>-->
+            <form>
+                <select name="variant" id="variant">
+                    <option value="1">Standard</option>
+                    <option value="2">Chess960</option>
+                    <option value="5">Three-check</option>
+                </select>
+
+                <select name="engine" id="engine">
+                    <option value="lichess">Stockfish (lichess)</option>
+                    <option value="stockfish" disabled>Stockfish (local)</option>
+                </select>
+
+                <select name="level" id="level">
+                    <option value="1">Level 1</option>
+                    <option value="2">Level 2</option>
+                    <option value="3">Level 3</option>
+                    <option value="4">Level 4</option>
+                    <option value="5">Level 5</option>
+                    <option value="6">Level 6</option>
+                    <option value="7">Level 7</option>
+                    <option value="8">Level 8</option>
+                </select>
+
+                <select name="color" id="color">
+                    <option value="white">White</option>
+                    <option value="black">Black</option>
+                    <option value="random">Random</option>
+                </select>
+
+                <select name="timeMode" id="timeMode">
+                    <option value="0">Unlimited</option>
+                    <option value="1" disabled>Real time</option>
+                </select>
+
+                <a href="#chessboard" class="ui-btn" id="createGame-btn">Create Game</a>
+            </form>
+        </div>
+    </div>
+    <div data-role="page" id="chessboard" data-theme="a">
+
+        <div role="main">
+            <!-- start example HTML -->
+            <div id="board" style="width: 100%"></div>
+            <!-- end example HTML -->
+        </div>
+    </div>
+    <script>
+        var init = function () {
+
+            //--- start example JS ---
+            var onDrop = function (source, target) {
+                if (source != target && target != "offboard") {
+                    console.log(source + target);
+                    sendMove(source, target);
+                }
+
+            };
+
+            var cfg = {
+                draggable: true,
+                position: 'start',
+                onDrop: onDrop,
+                squarePieces: false
+            };
+            window.board = ChessBoard('board', cfg);
+
+            try {
+                syncFEN();
+            }
+            catch (err) {
+                console.log(err);
+            }
+            //--- end example JS ---
+
+        }; // end init()
+        //$(document).ready(init);
+        //$(document).on('pageshow', '#chessboard', function () { board.resize; });
+        $(document).on('pageshow', '#chessboard', init);
+        $(document).on('pagehide', '#chessboard', function () { socket.close(); });
+    </script>
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="scripts/platformOverrides.js"></script>
+    <script type="text/javascript" src="scripts/index.js"></script>
+    <script type="text/javascript" src="scripts/lichess.js"></script>
+</body>
+</html>
