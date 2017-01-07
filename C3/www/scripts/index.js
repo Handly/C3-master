@@ -5,7 +5,7 @@
 (function () {
     "use strict";
 
-    document.addEventListener( 'deviceready', onDeviceReady.bind( this ), false );
+    document.addEventListener('deviceready', onDeviceReady.bind(this), false);
 
     function onDeviceReady() {
 
@@ -22,9 +22,9 @@
         $('#createGame-btn').click(createGame);
 
         // Handle the Cordova pause and resume events
-        document.addEventListener( 'pause', onPause.bind( this ), false );
-        document.addEventListener( 'resume', onResume.bind( this ), false );
-        
+        document.addEventListener('pause', onPause.bind(this), false);
+        document.addEventListener('resume', onResume.bind(this), false);
+
         // TODO: Cordova has been loaded. Perform any initialization that requires Cordova here.
 
     };
@@ -72,7 +72,7 @@ var app = {
         }
         document.addEventListener('deviceready', this.onDeviceReady, false);
         refreshButton.addEventListener(TOUCH_START, this.refreshDeviceList, false);
-        sendButton.addEventListener(TOUCH_START, this.sendData, false);
+        //sendButton.addEventListener(TOUCH_START, this.sendData, false);
         disconnectButton.addEventListener(TOUCH_START, this.disconnect, false);
         deviceList.addEventListener('touchstart', this.connect, false);
     },
@@ -145,26 +145,32 @@ var app = {
         bluetoothSerial.connect(deviceId, onConnect, app.onError);
     },
     onData: function (data) { // data received from Arduino
-        console.log(data);
-        resultDiv.innerHTML = resultDiv.innerHTML + "Received: " + data + "<br/>";
-        resultDiv.scrollTop = resultDiv.scrollHeight;
-        sendMove(data.substring(0, 2), data.substring(2, 4));
+        dataKeeper = data;
+        console.log(dataKeeper + "was sent from EVO/chesstronic");
+        //resultDiv.innerHTML = resultDiv.innerHTML + "Received: " + data + "<br/>";
+        //resultDiv.scrollTop = resultDiv.scrollHeight;
+        source = dataKeeper.substring(0, 2);
+        target = dataKeeper.substring(2, 4);
+        sendMove(source, target);
     },
-    sendData: function (event) { // send data to Arduino
+    //sendData: function (event) { // send data to Arduino
 
-        var success = function () {
-            console.log("success");
-            resultDiv.innerHTML = resultDiv.innerHTML + "Sent: " + messageInput.value + "<br/>";
-            resultDiv.scrollTop = resultDiv.scrollHeight;
-        };
+    //    //event.stopPropagation();
 
-        var failure = function () {
-            alert("Failed writing data to Bluetooth peripheral");
-        };
+    //    var success = function () {
+    //        console.log("success");
+    //        //resultDiv.innerHTML = resultDiv.innerHTML + "Sent: " + messageInput.value + "<br/>";
+    //        //resultDiv.scrollTop = resultDiv.scrollHeight;
+    //    };
 
-        var data = messageInput.value;
-        bluetoothSerial.write(data, success, failure);
-    },
+    //    var failure = function () {
+    //        alert("Failed writing data to Bluetooth peripheral");
+    //    };
+
+    //    var data = latestMove;
+    //    bluetoothSerial.write(data, success, failure);
+
+    //},
     disconnect: function (event) {
         bluetoothSerial.disconnect(app.showMainPage, app.onError);
     },

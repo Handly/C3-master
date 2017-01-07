@@ -83,6 +83,8 @@ function createGame() {
 
 pinger = null;
 
+//lastMove = latestMove = "NewGame";
+
 function gameConnect(fullID) {
 
     if (pinger == null) {
@@ -120,6 +122,8 @@ function gameConnect(fullID) {
 
             window.awaitingAck = false;
 
+            window.sentMove = null;
+
             window.socket = new WebSocket(socketUrl);
 
             socket.onopen = function () {
@@ -142,6 +146,8 @@ function gameConnect(fullID) {
 
             socket.onmessage = function (event) {
 
+                //event.stopPropagation();
+
                 console.log(event.data);
                 var currEvent = event;
                 var eventData = JSON.parse(currEvent.data);
@@ -149,6 +155,7 @@ function gameConnect(fullID) {
 
                     if (eventData.t != "n") {
                         if (awaitingAck && eventData.t != "ack") {
+                            console.log("resending move...");
                             sendMove();
                         }
                         else if (awaitingAck && eventData.t == "ack") {
@@ -162,8 +169,13 @@ function gameConnect(fullID) {
                         }
                         else if (eventData.t == "move") {
                             latestMove = eventData.d.uci;
-                            console.log(latestMove);
-                            board.position(eventData.d.fen);
+                            console.log("move registered! " + latestMove);
+                            
+                                board.position(eventData.d.fen);
+                                //if (latestMove != sentMove) 
+                                    bluetoothSerial.write(latestMove);
+                              
+                            
                         }
                         else if (eventData.t == "b") {
                             for (var i = 0; i < eventData.d.length; i++) {
@@ -172,8 +184,13 @@ function gameConnect(fullID) {
                                 }
                                 if (eventData.d[i].t == "move") {
                                     latestMove = eventData.d[i].d.uci;
-                                    console.log(latestMove);
-                                    board.position(eventData.d[i].d.fen);
+                                    console.log("move registered! " + latestMove);
+                                    
+                                        board.position(eventData.d[i].d.fen);
+                                        //if (latestMove != sentMove)
+                                            bluetoothSerial.write(latestMove);
+
+                                    
                                 }
                                 else if (eventData.d[i].t == "end") {
                                     console.log("End event received");
@@ -223,7 +240,10 @@ function sendMove(source, target) {
         }
     };
 
+    window.sentMove = source + target;
+
     socket.send(JSON.stringify(move));
+    console.log("move sent to lichess!");
     window.awaitingAck = true;
 
 

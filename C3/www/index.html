@@ -184,16 +184,10 @@
 
             };
 
-            var onChange = function () {
-                if (typeof latestMove !== "undefined")
-                    bluetoothSerial.write(latestMove);
-            };
-
             var cfg = {
                 draggable: true,
                 onDrop: onDrop,
-                onChange: onChange,
-                squarePieces: false
+                sparePieces: false
             };
 
             console.log(typeof board);
