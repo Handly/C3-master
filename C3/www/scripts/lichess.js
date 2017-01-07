@@ -81,38 +81,6 @@ function createGame() {
     }
 }
 
-function fetchVersion(fullID) {
-    var xhttp = new XMLHttpRequest();
-    var url = "http://en.lichess.org/" + fullID;
-    xhttp.open("GET", url, false);
-
-    // send the proper header information along with the request
-    xhttp.setRequestHeader("Accept", "application/vnd.lichess.v1+json");
-
-
-
-
-    xhttp.send();
-    var version = JSON.parse(xhttp.responseText).player.version;
-    console.log(version);
-    return version;
-}
-
-function fetchSocketUrl(fullID) {
-    var xhttp = new XMLHttpRequest();
-    var url = "http://en.lichess.org/" + fullID;
-    xhttp.open("GET", url, false);
-
-    xhttp.setRequestHeader("Accept", "application/vnd.lichess.v1+json");
-
-
-
-    xhttp.send();
-    var socketURL = JSON.parse(xhttp.responseText).url.socket;
-    console.log(socketURL);
-    return socketURL;
-}
-
 pinger = null;
 
 function gameConnect(fullID) {
@@ -123,113 +91,124 @@ function gameConnect(fullID) {
 
         window.currentGame = fullID;
 
-        try {
-            syncFEN();
-        }
-        catch (err) {
-            console.log(err);
-        }
+        // ---------------- Store Game Info ----------------- //
 
-        var versionInit = fetchVersion(currentGame);
-        window.version = versionInit;
+        var xhttp = new XMLHttpRequest();
+        var url = "http://en.lichess.org/" + currentGame;
+        xhttp.open("GET", url, true);
 
-        var baseUrl = fetchSocketUrl(currentGame); // obtained from game creation API (`url.socket`)
-        clientId = Math.random().toString(36).substring(2); // created and stored by the client
-
-        var socketUrl = 'ws://socket.en.lichess.org:9021' + baseUrl + '?sri=' + clientId + '&ran=--ranph--';
-        //alert(socketUrl);
-
-        window.awaitingAck = false;
-
-
-        window.socket = new WebSocket(socketUrl);
-
-
-
-        socket.onopen = function () {
-
-
-
-            window.pinger = setInterval(function () {
-
-                socket.send(JSON.stringify({
-                    t: 'p',
-                    v: version
-                }));
-
-                console.log(JSON.stringify({
-                    t: 'p',
-                    v: version
-                }));
-
-            }, 2000)
-
-
+        xhttp.setRequestHeader("Accept", "application/vnd.lichess.v1+json");
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                gameInfo = JSON.parse(xhttp.responseText);
+                startGame();
+            }
         };
+        xhttp.send();
 
-        socket.onmessage = function (event) {
+        // -------------------------------------------------- //
 
-            console.log(event.data);
-            var currEvent = event;
-            var eventData = JSON.parse(currEvent.data);
-            if (eventData.hasOwnProperty("t")) {
+        function startGame() {
 
-                if (eventData.t != "n") {
-                    if (awaitingAck && eventData.t != "ack") {
-                        sendMove();
-                    }
-                    else if (awaitingAck && eventData.t == "ack") {
+            var versionInit = gameInfo.player.verion;
+            window.version = versionInit;
 
-                        awaitingAck = false;
-                    }
-                    if (eventData.t == "resync") {
-                        console.log("resync message received!");
-                        syncFEN();
+            var baseUrl = gameInfo.url.socket; // obtained from game creation API (`url.socket`)
+            clientId = Math.random().toString(36).substring(2); // created and stored by the client
 
-                    }
-                    else if (eventData.t == "move") {
-                        board.move(eventData.d.uci.substring(0, 2) + "-" + eventData.d.uci.substring(2, 4));
-                        bluetoothSerial.write(eventData.d.uci);
-                        console.log(eventData.d.uci);
-                    }
-                    else if (eventData.t == "b") {
-                        for (var i = 0; i < eventData.d.length; i++) {
-                            if (eventData.d[i].hasOwnProperty("v")) {
-                                version = eventData.d[i].v;
-                            }
-                            if (eventData.d[i].t == "move") {
-                                board.move(eventData.d[i].d.uci.substring(0, 2) + "-" + (eventData.d[i].d.uci.substring(2, 4)));
+            var socketUrl = 'ws://socket.en.lichess.org:9021' + baseUrl + '?sri=' + clientId + '&ran=--ranph--';
 
-                                bluetoothSerial.write(eventData.d[i].d.uci);
-                                console.log(eventData.d[i].d.uci);
-                            }
-                            else if (eventData.d[i].t == "end") {
-                                console.log("End event received");
-                                var winningColor = eventData.d[i].d;
-                                var winnerDisplay = setTimeout(function () { alert(winningColor + " wins!"); }, 1000);
-                            }
+            window.awaitingAck = false;
+
+            window.socket = new WebSocket(socketUrl);
+
+            socket.onopen = function () {
+
+                window.pinger = setInterval(function () {
+
+                    socket.send(JSON.stringify({
+                        t: 'p',
+                        v: version
+                    }));
+
+                    console.log(JSON.stringify({
+                        t: 'p',
+                        v: version
+                    }));
+
+                }, 2000)
+
+            };
+
+            socket.onmessage = function (event) {
+
+                console.log(event.data);
+                var currEvent = event;
+                var eventData = JSON.parse(currEvent.data);
+                if (eventData.hasOwnProperty("t")) {
+
+                    if (eventData.t != "n") {
+                        if (awaitingAck && eventData.t != "ack") {
+                            sendMove();
                         }
+                        else if (awaitingAck && eventData.t == "ack") {
 
+                            awaitingAck = false;
+                        }
+                        if (eventData.t == "resync") {
+                            console.log("resync message received!");
+                            syncFEN();
+
+                        }
+                        else if (eventData.t == "move") {
+                            latestMove = eventData.d.uci;
+                            console.log(latestMove);
+                            board.position(eventData.d.fen);
+                        }
+                        else if (eventData.t == "b") {
+                            for (var i = 0; i < eventData.d.length; i++) {
+                                if (eventData.d[i].hasOwnProperty("v")) {
+                                    version = eventData.d[i].v;
+                                }
+                                if (eventData.d[i].t == "move") {
+                                    latestMove = eventData.d[i].d.uci;
+                                    console.log(latestMove);
+                                    board.position(eventData.d[i].d.fen);
+                                }
+                                else if (eventData.d[i].t == "end") {
+                                    console.log("End event received");
+                                    var winningColor = eventData.d[i].d;
+                                    var winnerDisplay = setTimeout(function () { alert(winningColor + " wins!"); }, 1000);
+                                }
+                            }
+
+                        }
                     }
                 }
+                if (eventData.hasOwnProperty("v")) {
+                    version = eventData.v;
+                }
+
+            };
+
+            socket.onerror = function () {
+                alert('error occurred!');
+            };
+
+            socket.onclose = function (event) {
+                clearInterval(pinger);
+                pinger = null;
+                console.log("socketClosed!");
+
+            };
+
+            try {
+                syncFEN();
             }
-            if (eventData.hasOwnProperty("v")) {
-                version = eventData.v;
+            catch (err) {
             }
 
-        };
-
-        socket.onerror = function () {
-            alert('error occurred!');
-        };
-
-        socket.onclose = function (event) {
-            clearInterval(pinger);
-            pinger = null;
-            console.log("socketClosed!");
-
-        };
-
+        }
     }
 }
 
@@ -263,7 +242,7 @@ function syncFEN() {
         if (this.readyState == 4 && this.status == 200) {
             var currentFEN = JSON.parse(xhttp.responseText).game.fen;
             console.log(currentFEN);
-            board.position(currentFEN, false);
+            board.position(currentFEN);
         }
     };
     xhttp.send();
