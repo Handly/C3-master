@@ -83,13 +83,11 @@ function createGame() {
 
 pinger = null;
 
-//lastMove = latestMove = "NewGame";
-
 function gameConnect(fullID) {
 
     if (pinger == null) {
 
-        pinger = "asdf" // garbage to ensure not null
+        pinger = "pinger not null now";
 
         window.currentGame = fullID;
 
@@ -112,8 +110,7 @@ function gameConnect(fullID) {
 
         function startGame() {
 
-            var versionInit = gameInfo.player.verion;
-            window.version = versionInit;
+            window.version = gameInfo.player.version;
 
             var baseUrl = gameInfo.url.socket; // obtained from game creation API (`url.socket`)
             clientId = Math.random().toString(36).substring(2); // created and stored by the client
@@ -140,17 +137,15 @@ function gameConnect(fullID) {
                         v: version
                     }));
 
-                }, 2000)
+                }, 2000);
 
             };
 
             socket.onmessage = function (event) {
 
-                //event.stopPropagation();
-
                 console.log(event.data);
-                var currEvent = event;
-                var eventData = JSON.parse(currEvent.data);
+                var eventData = JSON.parse(event.data);
+
                 if (eventData.hasOwnProperty("t")) {
 
                     if (eventData.t != "n") {
@@ -169,13 +164,13 @@ function gameConnect(fullID) {
                         }
                         else if (eventData.t == "move") {
                             latestMove = eventData.d.uci;
-                            console.log("move registered! " + latestMove);
-                            
-                                board.position(eventData.d.fen);
-                                //if (latestMove != sentMove) 
-                                    bluetoothSerial.write(latestMove);
-                              
-                            
+
+                            board.position(eventData.d.fen);
+
+                            bluetoothSerial.write(latestMove);
+
+                            console.log(latestMove + " sent to bluetooth");
+
                         }
                         else if (eventData.t == "b") {
                             for (var i = 0; i < eventData.d.length; i++) {
@@ -184,13 +179,13 @@ function gameConnect(fullID) {
                                 }
                                 if (eventData.d[i].t == "move") {
                                     latestMove = eventData.d[i].d.uci;
-                                    console.log("move registered! " + latestMove);
-                                    
-                                        board.position(eventData.d[i].d.fen);
-                                        //if (latestMove != sentMove)
-                                            bluetoothSerial.write(latestMove);
 
-                                    
+                                    board.position(eventData.d[i].d.fen);
+
+                                    bluetoothSerial.write(latestMove);
+
+                                    console.log(latestMove + " sent to bluetooth");
+
                                 }
                                 else if (eventData.d[i].t == "end") {
                                     console.log("End event received");
@@ -205,11 +200,10 @@ function gameConnect(fullID) {
                 if (eventData.hasOwnProperty("v")) {
                     version = eventData.v;
                 }
-
             };
 
             socket.onerror = function () {
-                alert('error occurred!');
+                console.log('error occurred!');
             };
 
             socket.onclose = function (event) {
@@ -230,7 +224,6 @@ function gameConnect(fullID) {
 }
 
 function sendMove(source, target) {
-
 
     var move = {
         t: 'move',
