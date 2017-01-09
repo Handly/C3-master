@@ -83,6 +83,10 @@ function createGame() {
 
 pinger = null;
 
+lastMove = null;
+
+latestMove = null;
+
 function gameConnect(fullID) {
 
     if (pinger == null) {
@@ -167,9 +171,6 @@ function gameConnect(fullID) {
 
                             board.position(eventData.d.fen);
 
-                            bluetoothSerial.write(latestMove);
-
-                            console.log(latestMove + " sent to bluetooth");
 
                         }
                         else if (eventData.t == "b") {
@@ -182,9 +183,6 @@ function gameConnect(fullID) {
 
                                     board.position(eventData.d[i].d.fen);
 
-                                    bluetoothSerial.write(latestMove);
-
-                                    console.log(latestMove + " sent to bluetooth");
 
                                 }
                                 else if (eventData.d[i].t == "end") {
@@ -194,6 +192,10 @@ function gameConnect(fullID) {
                                 }
                             }
 
+                        }
+                        if (lastMove != latestMove && latestMove != sentMove) {
+                            bluetoothSerial.write(latestMove);
+                            lastMove = latestMove;
                         }
                     }
                 }
@@ -234,6 +236,8 @@ function sendMove(source, target) {
     };
 
     window.sentMove = source + target;
+
+    sentMove = source + target;
 
     socket.send(JSON.stringify(move));
     console.log("move sent to lichess!");
