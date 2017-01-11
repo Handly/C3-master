@@ -13,6 +13,8 @@
             e.preventDefault();
         });
 
+        getLichessUser();
+
         $('#login-btn').click(lichessLogin);
 
         $('#logout-btn').click(lichessLogout);
@@ -132,7 +134,7 @@ var app = {
             // subscribe for incoming data
             bluetoothSerial.subscribe('\n', app.onData, app.onError);
 
-            resultDiv.innerHTML = "";
+
             app.setStatus("Connected");
             app.showDetailPage();
         };
@@ -147,8 +149,7 @@ var app = {
     onData: function (data) { // data received from Arduino
         dataKeeper = data;
         console.log(dataKeeper + "was sent from EVO/chesstronic");
-        //resultDiv.innerHTML = resultDiv.innerHTML + "Received: " + data + "<br/>";
-        //resultDiv.scrollTop = resultDiv.scrollHeight;
+
         source = dataKeeper.substring(0, 2);
         target = dataKeeper.substring(2, 4);
         sendMove(source, target);
@@ -159,8 +160,6 @@ var app = {
 
     //    var success = function () {
     //        console.log("success");
-    //        //resultDiv.innerHTML = resultDiv.innerHTML + "Sent: " + messageInput.value + "<br/>";
-    //        //resultDiv.scrollTop = resultDiv.scrollHeight;
     //    };
 
     //    var failure = function () {

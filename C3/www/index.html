@@ -27,6 +27,11 @@
         .hidden {
             display: none;
         }
+
+        .ui-icon-myicon:after {
+            background-image: url("img/lichess.svg");
+            background-size: 18px 18px;
+        }
     </style>
 
 </head>
@@ -34,10 +39,19 @@
     <div data-role="page" id="home" data-theme="a">
 
         <div data-role="header">
-            <h1>Chesstronic</h1>
+            <div style="text-align: center; margin: 0 auto;"><img style="width: 120px; padding: 10% 0 0 0;" src="img/Chess-icon[1].png"></div>
+            <h1>Chesstronic</h1><br />
         </div>
-
+        <div data-role="panel" id="loginPanel">
+            <form>
+                <input type="text" id="username" name="username" placeholder="Username" value="lanyon" required>
+                <input type="password" id="password" name="password" placeholder="Password" value="|LANy0n|" required>
+                <button id="login-btn">Login</button>
+            </form>
+        </div>
         <div data-role="main" class="ui-content">
+            <a href="#loginPanel" id="login-link" class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-myicon">Login</a>
+            <button id="logout-btn" class="hidden ui-btn ui-btn-inline ui-btn-icon-left ui-icon-myicon">Logout</button>
             <a href="#machine" class="ui-btn">Play Machine</a>
             <a href="#myGames" class="ui-btn">My Games</a>
             <a href="#bluetooth" class="ui-btn">Connect Board</a>
@@ -93,23 +107,29 @@
         });
 
     </script>
+
+
+    <div data-role="page" id="bluetooth" data-theme="a">
+        <div data-role="header">
+            <h1>Connect Board</h1>
+        </div>
+        <div data-role="main" class="ui-content">
+            <div id="mainPage">
+                <ul style="list-style:none; padding-left:0;" id="deviceList"></ul>
+                <button id="refreshButton">Refresh</button>
+            </div>
+            <div id="detailPage">
+                <button id="disconnectButton">Disconnect</button>
+            </div>
+            <div id="statusDiv"></div>
+        </div>
+    </div>
+
     <div data-role="page" id="machine" data-theme="a">
         <div data-role="header">
-            <h1>Machine</h1>
+            <h1>Play Machine</h1>
         </div>
-
-        <div data-role="panel" id="loginPanel">
-            <form>
-                <input type="text" id="username" name="username" placeholder="Username" value="lanyon" required>
-                <input type="password" id="password" name="password" placeholder="Password" value="|LANy0n|" required>
-                <button id="login-btn">Login</button>
-            </form>
-        </div>
-
         <div data-role="main" class="ui-content">
-            <a href="#loginPanel" id="login-link" class="ui-btn ui-btn-inline">Login</a>
-            <button id="logout-btn" class="hidden" data-inline="true">Logout</button>
-            <!--<button id="getUser-btn">getUser</button>-->
             <form>
                 <select name="variant" id="variant">
                     <option value="1">Standard</option>
@@ -156,22 +176,7 @@
             <!-- end example HTML -->
         </div>
     </div>
-    <div data-role="page" id="bluetooth" data-theme="a">
-        <h1>Bluetooth Serial Chat</h1>
-        <div id="mainPage">
-            <ul id="deviceList"></ul>
-            <button id="refreshButton">Refresh</button>
-        </div>
-        <div id="detailPage">
-            <div id="resultDiv"></div>
-            <div>
-                <input type="text" id="messageInput" value="Hello" />
-                <button id="sendButton">Send</button>
-            </div>
-            <button id="disconnectButton">Disconnect</button>
-        </div>
-        <div id="statusDiv"></div>
-    </div>
+
     <script>
         var init = function () {
 

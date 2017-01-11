@@ -51,11 +51,13 @@ function getLichessUser() {
     xhttp.onreadystatechange = function () {
         if (this.readyState == 4 && this.status == 200) {
             // status OK --> return true
-            return true;
+            $("#login-link").hide();
+            $("#logout-btn").show();
         }
         else if (this.readyState == 4 && this.status != 200) {
             // unauthorized --> return false
-            return false;
+            $("#login-link").show();
+            $("#logout-btn").hide();
         }
     };
     xhttp.send();
