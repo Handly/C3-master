@@ -68,7 +68,7 @@ function createGame() {
     if ($('#engine').val() == "lichess") {
         var xhttp = new XMLHttpRequest();
         var url = "http://en.lichess.org/setup/ai";
-        var params = "variant=" + $("#variant").val() + "&timeMode=" + $("#timeMode").val() + "&days=2&time=10&increment=0&level=" + $("#level").val() + "&color=" + $("#color").val();
+        var params = "variant=" + $("#variant").val() + "&timeMode=" + $("#timeMode").val() + "&days=2&time=10&increment=0&level=" + $("#level").val() + "&color=" + $("#color").val(); // e.g. variant=1&timeMode=0&days=2&time=10&increment=0&level=1&color=white
         xhttp.open("POST", url, true);
 
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -81,6 +81,21 @@ function createGame() {
         };
         xhttp.send(params);
     }
+}
+
+function challengeHandler(gameID, action) {
+    var xhttp = new XMLHttpRequest();
+    var url = "http://en.lichess.org/challenge/" + gameID + "/" + action;
+    xhttp.open("POST", url, true);
+
+    xhttp.setRequestHeader("Accept", "application/vnd.lichess.v1+json");
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            if (action == "accept")
+                gameConnect(JSON.parse(xhttp.responseText).game.id + JSON.parse(xhttp.responseText).player.id);
+        }
+    };
+    xhttp.send();
 }
 
 pinger = null;

@@ -69,6 +69,7 @@
                 <li><a href="item1.html">Item1</a></li>
                 <li><a href="item2.html">item2</a></li>
             </ul>
+            
         </div>
 
     </div>
@@ -78,7 +79,7 @@
 
             $("#gameList").html("");
 
-            $('#gameList').on('click', 'a', function () {
+            $('#gameList').on('click', 'a.current', function () {
                 console.log("connecting to game with id = " + $(this).attr('data-gameid'));
                 gameConnect($(this).attr('data-gameid'));
             });
@@ -95,14 +96,51 @@
                     games = JSON.parse(xhttp.responseText).nowPlaying;
 
                     for (var i = 0; i < games.length; i++) {
-                        $("#gameList").append("<li><a href='#chessboard' data-gameid=" + games[i].fullId + ">" + games[i].fullId + "</a></li>");
+                        $("#gameList").append("<li><a href='#chessboard' class='current' data-gameid=" + games[i].fullId + ">" + games[i].fullId + "</a></li>");
                         $("#gameList").listview('refresh');
                     }
 
-                    //$("#gameList").enhanceWithin(); // adds styling to dynamically loaded content
+                    loadChallenges();
+
                 }
             };
             xhttp.send();
+
+            function loadChallenges() {
+
+                $('#gameList').on('click', 'a.challenge', function () {
+                    console.log($(this).attr('data-action')+"ing challenge with id = " + $(this).attr('data-gameid'));
+                    challengeHandler($(this).attr('data-gameid'), $(this).attr('data-action'));
+                    $(this).closest('li').remove();
+
+                });
+
+                var xhttp = new XMLHttpRequest();
+                var url = "http://en.lichess.org/challenge";
+                var bustCache = '?' + new Date().getTime();
+                xhttp.open("GET", url + bustCache, true);
+
+                // send the proper header information along with the request
+                xhttp.setRequestHeader("Accept", "application/vnd.lichess.v1+json");
+                xhttp.onreadystatechange = function () {
+                    if (this.readyState == 4 && this.status == 200) {
+                        gamesIn = JSON.parse(xhttp.responseText).in;
+                        gamesOut = JSON.parse(xhttp.responseText).out;
+
+                        for (var i = 0; i < gamesIn.length; i++) {
+                            $("#gameList").append("<li><a href='#chessboard' class='challenge' data-action='accept' data-gameid=" + gamesIn[i].id + ">Challenge In: " + gamesIn[i].id + "</a></li>");
+                            $("#gameList").listview('refresh');
+                        }
+
+                        for (var i = 0; i < gamesOut.length; i++) {
+                            $("#gameList").append("<li><a href='#myGames' class='challenge' data-action='cancel' data-gameid=" + gamesOut[i].id + ">Challenge Out: " + gamesOut[i].id + "</a></li>");
+                            $("#gameList").listview('refresh');
+                        }
+
+                    }
+                };
+                xhttp.send();
+            }
 
         });
 
