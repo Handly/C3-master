@@ -65,10 +65,10 @@ function getLichessUser() {
 }
 
 function createGame() {
-    if ($('#engine').val() == "lichess") {
+    if ($('#engine').val() == "lichess") {      ////////////// hey, note this condition!!!
         var xhttp = new XMLHttpRequest();
         var url = "http://en.lichess.org/setup/ai";
-        var params = "variant=" + $("#variant").val() + "&timeMode=" + $("#timeMode").val() + "&days=2&time=10&increment=0&level=" + $("#level").val() + "&color=" + $("#color").val(); // e.g. variant=1&timeMode=0&days=2&time=10&increment=0&level=1&color=white
+        var params = "variant=" + $("#machine-variant").val() + "&timeMode=" + $("#machine-timeMode").val() + "&days=2&time=10&increment=0&level=" + $("#machine-level").val() + "&color=" + $("#machine-color").val(); // e.g. variant=1&timeMode=0&days=2&time=10&increment=0&level=1&color=white
         xhttp.open("POST", url, true);
 
         xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
@@ -81,6 +81,25 @@ function createGame() {
         };
         xhttp.send(params);
     }
+}
+
+function createChallenge() {
+
+        var xhttp = new XMLHttpRequest();
+        var url = "http://en.lichess.org/setup/friend?user=" + $("#friend-username").val();
+        var params = "variant=" + $("#friend-variant").val() + "&timeMode=" + $("#friend-timeMode").val() + "&days=2&time=10&increment=0&color=" + $("#friend-color").val(); // e.g. variant=1&timeMode=0&days=2&time=10&increment=0&level=1&color=white
+        xhttp.open("POST", url, true);
+
+        xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        // send the proper header information along with the request
+        xhttp.setRequestHeader("Accept", "application/vnd.lichess.v1+json");
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                console.log("challenge created!!");
+            }
+        };
+        xhttp.send(params);
+    
 }
 
 function challengeHandler(gameID, action) {
@@ -280,4 +299,32 @@ function syncFEN() {
         }
     };
     xhttp.send();
+}
+
+function loadUsers(userName)
+{
+    var xhttp = new XMLHttpRequest();
+    var url = "http://en.lichess.org/player/autocomplete?term=" + userName;
+    xhttp.open("GET", url, true);
+
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    // send the proper header information along with the request
+    xhttp.setRequestHeader("Accept", "application/vnd.lichess.v1+json");
+    xhttp.onreadystatechange = function () {
+        if (this.readyState == 4 && this.status == 200) {
+            var users = JSON.parse(xhttp.responseText);
+            $("#friendList").html("");
+            for (var i = 0; i < users.length; i++) {
+                $("#friendList").append("<li><a href='#challenge' data-username="+userFullNameToId(users[i])+">" + users[i] + "</a></li>");
+                $("#friendList").listview('refresh');
+            }
+        }
+    };
+    xhttp.send();
+}
+
+function userFullNameToId(fullName) {
+    var split = fullName.split(' ');
+    var id = split.length == 1 ? split[0] : split[1];
+    return id.toLowerCase();
 }

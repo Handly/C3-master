@@ -52,11 +52,103 @@
         <div data-role="main" class="ui-content">
             <a href="#loginPanel" id="login-link" class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-myicon">Login</a>
             <button id="logout-btn" class="hidden ui-btn ui-btn-inline ui-btn-icon-left ui-icon-myicon">Logout</button>
-            <a href="#machine" class="ui-btn">Play Machine</a>
+            <a href="#createGame" class="ui-btn">Create Game</a>
             <a href="#myGames" class="ui-btn">My Games</a>
             <a href="#bluetooth" class="ui-btn">Connect Board</a>
         </div>
 
+    </div>
+
+    <script>
+
+        $(document).on('pagebeforeshow', '#createGame', function () {
+
+            $('#createList').on('click', 'a', function () {
+                cfg.onDrop = eval($(this).attr('data-gametype'));
+            });
+        });
+    </script>
+    <div data-role="page" id="createGame" data-theme="a">
+
+        <div data-role="header">
+            <h1>Create Game</h1>
+        </div>
+
+        <div data-role="main" class="ui-content">
+            <ul data-role="listview" data-theme="a" id="createList">
+                <li><a href="#machine" data-gametype="lichess">Play lichess A.I.</a></li>
+                <li><a href="#friend" data-gametype="lichess">Play lichess Friend</a></li>
+                <li><a href="#chessboard" data-gametype="otb">Play Over-the-Board</a></li>
+            </ul>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        $(document).on('pagebeforeshow', '#friend', function () {
+
+            $('#friendList').on('click', 'a', function () {
+                $('#friend-username').val($(this).attr('data-username'));
+            });
+        });
+    </script>
+    <div data-role="page" id="friend" data-theme="a">
+
+        <div data-role="header">
+            <h1>Play Friend</h1>
+        </div>
+
+        <div data-role="main" class="ui-content">
+            <form class="ui-filterable">
+                <input data-type="search" placeholder="Search for names.."  onkeyup="loadUsers(this.value)" />
+            </form>
+            <ul data-role="listview" data-inset="true" data-theme="a" id="friendList">
+            </ul>
+        </div>
+
+    </div>
+
+
+    <script>
+
+        $(document).on('pagebeforeshow', '#challenge', function () {
+
+            $('#createChallenge-btn').one('click', function () {
+                createChallenge();
+            });
+        });
+    </script>
+    <div data-role="page" id="challenge" data-theme="a">
+        <div data-role="header">
+            <h1>Play Friend</h1>
+        </div>
+
+        <input type="text" id="friend-username" style="display:none;" />
+        <div data-role="main" class="ui-content">
+            <form>
+                
+                <select name="variant" id="friend-variant">
+                    <option value="1">Standard</option>
+                    <option value="2">Chess960</option>
+                    <option value="5">Three-check</option>
+                </select>
+
+                <select name="color" id="friend-color">
+                    <option value="white">White</option>
+                    <option value="black">Black</option>
+                    <option value="random">Random</option>
+                </select>
+
+                <select name="timeMode" id="friend-timeMode">
+                    <option value="0">Unlimited</option>
+                    <option value="1" disabled>Real time</option>
+                </select>
+
+                <a href="#" class="ui-btn" id="createChallenge-btn">Create Challenge</a>
+            </form>
+        </div>
     </div>
     <div data-role="page" id="myGames" data-theme="a">
 
@@ -65,11 +157,8 @@
         </div>
 
         <div data-role="main" class="ui-content">
-            <ul data-role="listview" data-theme="a" id="gameList">
-                <li><a href="item1.html">Item1</a></li>
-                <li><a href="item2.html">item2</a></li>
-            </ul>
-            
+            <ul data-role="listview" data-theme="a" id="gameList"></ul>
+
         </div>
 
     </div>
@@ -79,8 +168,9 @@
 
             $("#gameList").html("");
 
-            $('#gameList').on('click', 'a.current', function () {
+            $('#gameList').one('click', 'a.current', function () {
                 console.log("connecting to game with id = " + $(this).attr('data-gameid'));
+                cfg.onDrop = eval($(this).attr('data-gametype'));
                 gameConnect($(this).attr('data-gameid'));
             });
 
@@ -96,7 +186,7 @@
                     games = JSON.parse(xhttp.responseText).nowPlaying;
 
                     for (var i = 0; i < games.length; i++) {
-                        $("#gameList").append("<li><a href='#chessboard' class='current' data-gameid=" + games[i].fullId + ">" + games[i].fullId + "</a></li>");
+                        $("#gameList").append("<li><a href='#chessboard' class='current' data-gametype='lichess' data-gameid=" + games[i].fullId + ">" + games[i].fullId + "</a></li>");
                         $("#gameList").listview('refresh');
                     }
 
@@ -108,8 +198,8 @@
 
             function loadChallenges() {
 
-                $('#gameList').on('click', 'a.challenge', function () {
-                    console.log($(this).attr('data-action')+"ing challenge with id = " + $(this).attr('data-gameid'));
+                $('#gameList').one('click', 'a.challenge', function () {
+                    console.log($(this).attr('data-action') + "ing challenge with id = " + $(this).attr('data-gameid'));
                     challengeHandler($(this).attr('data-gameid'), $(this).attr('data-action'));
                     $(this).closest('li').remove();
 
@@ -128,7 +218,7 @@
                         gamesOut = JSON.parse(xhttp.responseText).out;
 
                         for (var i = 0; i < gamesIn.length; i++) {
-                            $("#gameList").append("<li><a href='#chessboard' class='challenge' data-action='accept' data-gameid=" + gamesIn[i].id + ">Challenge In: " + gamesIn[i].id + "</a></li>");
+                            $("#gameList").append("<li><a href='#chessboard' class='challenge' data-gametype='lichess' data-action='accept' data-gameid=" + gamesIn[i].id + ">Challenge In: " + gamesIn[i].id + "</a></li>");
                             $("#gameList").listview('refresh');
                         }
 
@@ -169,18 +259,18 @@
         </div>
         <div data-role="main" class="ui-content">
             <form>
-                <select name="variant" id="variant">
+                <select name="variant" id="machine-variant">
                     <option value="1">Standard</option>
                     <option value="2">Chess960</option>
                     <option value="5">Three-check</option>
                 </select>
 
-                <select name="engine" id="engine">
+                <select name="engine" id="machine-engine">
                     <option value="lichess">Stockfish (lichess)</option>
                     <option value="stockfish" disabled>Stockfish (local)</option>
                 </select>
 
-                <select name="level" id="level">
+                <select name="level" id="machine-level">
                     <option value="1">Level 1</option>
                     <option value="2">Level 2</option>
                     <option value="3">Level 3</option>
@@ -191,13 +281,13 @@
                     <option value="8">Level 8</option>
                 </select>
 
-                <select name="color" id="color">
+                <select name="color" id="machine-color">
                     <option value="white">White</option>
                     <option value="black">Black</option>
                     <option value="random">Random</option>
                 </select>
 
-                <select name="timeMode" id="timeMode">
+                <select name="timeMode" id="machine-timeMode">
                     <option value="0">Unlimited</option>
                     <option value="1" disabled>Real time</option>
                 </select>
@@ -216,27 +306,33 @@
     </div>
 
     <script>
-        var init = function () {
+        var otb = function (source, target, piece, newPos, oldPos, orientation) {
+            console.log("New position: " + ChessBoard.objToFen(newPos));
+            console.log("Old position: " + ChessBoard.objToFen(oldPos));
+            console.log("Orientation: " + orientation);
+        };
+
+        var lichess = function (source, target) {
+            if (source != target && target != "offboard") {
+                console.log(source + target);
+                sendMove(source, target);
+            }
+
+        };
+
+        var cfg = {
+            draggable: true,
+            position: 'start',
+            onDrop: null
+        };
+
+        var init = function (cfg) {
 
             //--- start example JS ---
-            var onDrop = function (source, target) {
-                if (source != target && target != "offboard") {
-                    console.log(source + target);
-                    sendMove(source, target);
-                }
 
-            };
-
-            var cfg = {
-                draggable: true,
-                onDrop: onDrop,
-                sparePieces: false
-            };
-
-            console.log(typeof board);
-            //if (typeof board === "undefined") // if board doesn't already exist, create it
             window.board = ChessBoard('board', cfg);
 
+            if (cfg.onDrop != otb)
             try {
                 syncFEN();
             }
@@ -247,8 +343,8 @@
 
         }; // end init()
 
-        $(document).on('pageshow', '#chessboard', init);
-        $(document).on('pagehide', '#chessboard', function () { socket.close(); board.clear(false) });
+        $(document).on('pageshow', '#chessboard', function () { init(cfg) });
+        $(document).on('pagehide', '#chessboard', function () { if (typeof socket != 'undefined') socket.close(); board.clear(false) });
     </script>
     <script type="text/javascript" src="cordova.js"></script>
     <script type="text/javascript" src="scripts/platformOverrides.js"></script>
