@@ -21,8 +21,9 @@
 
         $('#getUser-btn').click(getLichessUser);
 
-        $('#createGame-btn').click(createGame);
+        $('#createMachineGame-btn').click(createMachineGame);
 
+        $('#createOTBGame-btn').click(createOTBGame);
         
 
         // Handle the Cordova pause and resume events

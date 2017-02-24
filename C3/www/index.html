@@ -50,122 +50,31 @@
             </form>
         </div>
         <div data-role="main" class="ui-content">
+            <button onclick="loadGameList()">refresh</button>
+            <ul data-role="listview" data-theme="a" id="gameList"></ul>
             <a href="#loginPanel" id="login-link" class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-myicon">Login</a>
             <button id="logout-btn" class="hidden ui-btn ui-btn-inline ui-btn-icon-left ui-icon-myicon">Logout</button>
-            <a href="#createGame" class="ui-btn">Create Game</a>
-            <a href="#myGames" class="ui-btn">My Games</a>
+            <a href="#machine" class="ui-btn">Play Machine</a>
+            <a href="#otb" class="ui-btn">Record OTB Game</a>
             <a href="#bluetooth" class="ui-btn">Connect Board</a>
         </div>
 
     </div>
 
+
+
+
+
+
     <script>
 
-        $(document).on('pagebeforeshow', '#createGame', function () {
+        $(document).on('pagebeforeshow', '#home', function () {
 
-            $('#createList').on('click', 'a', function () {
-                cfg.onDrop = eval($(this).attr('data-gametype'));
-            });
+            loadGameList();
+
         });
-    </script>
-    <div data-role="page" id="createGame" data-theme="a">
 
-        <div data-role="header">
-            <h1>Create Game</h1>
-        </div>
-
-        <div data-role="main" class="ui-content">
-            <ul data-role="listview" data-theme="a" id="createList">
-                <li><a href="#machine" data-gametype="lichess">Play lichess A.I.</a></li>
-                <li><a href="#friend" data-gametype="lichess">Play lichess Friend</a></li>
-                <li><a href="#chessboard" data-gametype="otb">Play Over-the-Board</a></li>
-            </ul>
-
-        </div>
-
-    </div>
-
-    <script>
-
-        $(document).on('pagebeforeshow', '#friend', function () {
-
-            $('#friendList').on('click', 'a', function () {
-                $('#friend-username').val($(this).attr('data-username'));
-            });
-        });
-    </script>
-    <div data-role="page" id="friend" data-theme="a">
-
-        <div data-role="header">
-            <h1>Play Friend</h1>
-        </div>
-
-        <div data-role="main" class="ui-content">
-            <form class="ui-filterable">
-                <input data-type="search" placeholder="Search for names.."  onkeyup="loadUsers(this.value)" />
-            </form>
-            <ul data-role="listview" data-inset="true" data-theme="a" id="friendList">
-            </ul>
-        </div>
-
-    </div>
-
-
-    <script>
-
-        $(document).on('pagebeforeshow', '#challenge', function () {
-
-            $('#createChallenge-btn').one('click', function () {
-                createChallenge();
-            });
-        });
-    </script>
-    <div data-role="page" id="challenge" data-theme="a">
-        <div data-role="header">
-            <h1>Play Friend</h1>
-        </div>
-
-        <input type="text" id="friend-username" style="display:none;" />
-        <div data-role="main" class="ui-content">
-            <form>
-                
-                <select name="variant" id="friend-variant">
-                    <option value="1">Standard</option>
-                    <option value="2">Chess960</option>
-                    <option value="5">Three-check</option>
-                </select>
-
-                <select name="color" id="friend-color">
-                    <option value="white">White</option>
-                    <option value="black">Black</option>
-                    <option value="random">Random</option>
-                </select>
-
-                <select name="timeMode" id="friend-timeMode">
-                    <option value="0">Unlimited</option>
-                    <option value="1" disabled>Real time</option>
-                </select>
-
-                <a href="#" class="ui-btn" id="createChallenge-btn">Create Challenge</a>
-            </form>
-        </div>
-    </div>
-    <div data-role="page" id="myGames" data-theme="a">
-
-        <div data-role="header">
-            <h1>My Games</h1>
-        </div>
-
-        <div data-role="main" class="ui-content">
-            <ul data-role="listview" data-theme="a" id="gameList"></ul>
-
-        </div>
-
-    </div>
-    <script>
-
-        $(document).on('pagebeforeshow', '#myGames', function () {
-
+        function loadGameList() {
             $("#gameList").html("");
 
             $('#gameList').one('click', 'a.current', function () {
@@ -186,53 +95,16 @@
                     games = JSON.parse(xhttp.responseText).nowPlaying;
 
                     for (var i = 0; i < games.length; i++) {
-                        $("#gameList").append("<li><a href='#chessboard' class='current' data-gametype='lichess' data-gameid=" + games[i].fullId + ">" + games[i].fullId + "</a></li>");
+                        $("#gameList").append("<li><a href='#chessboard' class='current' data-gametype='lichess' data-gameid='" + games[i].fullId + "'>" + games[i].fullId + "</a></li>");
                         $("#gameList").listview('refresh');
                     }
 
-                    loadChallenges();
+
 
                 }
             };
             xhttp.send();
-
-            function loadChallenges() {
-
-                $('#gameList').one('click', 'a.challenge', function () {
-                    console.log($(this).attr('data-action') + "ing challenge with id = " + $(this).attr('data-gameid'));
-                    challengeHandler($(this).attr('data-gameid'), $(this).attr('data-action'));
-                    $(this).closest('li').remove();
-
-                });
-
-                var xhttp = new XMLHttpRequest();
-                var url = "http://en.lichess.org/challenge";
-                var bustCache = '?' + new Date().getTime();
-                xhttp.open("GET", url + bustCache, true);
-
-                // send the proper header information along with the request
-                xhttp.setRequestHeader("Accept", "application/vnd.lichess.v1+json");
-                xhttp.onreadystatechange = function () {
-                    if (this.readyState == 4 && this.status == 200) {
-                        gamesIn = JSON.parse(xhttp.responseText).in;
-                        gamesOut = JSON.parse(xhttp.responseText).out;
-
-                        for (var i = 0; i < gamesIn.length; i++) {
-                            $("#gameList").append("<li><a href='#chessboard' class='challenge' data-gametype='lichess' data-action='accept' data-gameid=" + gamesIn[i].id + ">Challenge In: " + gamesIn[i].id + "</a></li>");
-                            $("#gameList").listview('refresh');
-                        }
-
-                        for (var i = 0; i < gamesOut.length; i++) {
-                            $("#gameList").append("<li><a href='#myGames' class='challenge' data-action='cancel' data-gameid=" + gamesOut[i].id + ">Challenge Out: " + gamesOut[i].id + "</a></li>");
-                            $("#gameList").listview('refresh');
-                        }
-
-                    }
-                };
-                xhttp.send();
-            }
-
-        });
+        }
 
     </script>
 
@@ -253,21 +125,22 @@
         </div>
     </div>
 
+
+    <script>
+        $('#createMachineGame-btn').one('click', function () {
+            cfg.onDrop = machine;
+        });
+    </script>
     <div data-role="page" id="machine" data-theme="a">
         <div data-role="header">
             <h1>Play Machine</h1>
         </div>
         <div data-role="main" class="ui-content">
             <form>
-                <select name="variant" id="machine-variant">
-                    <option value="1">Standard</option>
-                    <option value="2">Chess960</option>
-                    <option value="5">Three-check</option>
-                </select>
 
                 <select name="engine" id="machine-engine">
-                    <option value="lichess">Stockfish (lichess)</option>
-                    <option value="stockfish" disabled>Stockfish (local)</option>
+                    <option value="stockfish">Stockfish</option>
+                    <option value="p4wn" disabled>p4wn</option>
                 </select>
 
                 <select name="level" id="machine-level">
@@ -292,10 +165,45 @@
                     <option value="1" disabled>Real time</option>
                 </select>
 
-                <a href="#chessboard" class="ui-btn" id="createGame-btn">Create Game</a>
+                <a href="#chessboard" class="ui-btn" id="createMachineGame-btn">Create Game</a>
             </form>
         </div>
     </div>
+
+    <script>
+        $('#createMachineGame-btn').one('click', function () {
+            cfg.onDrop = otb;
+        });
+    </script>
+    <div data-role="page" id="otb" data-theme="a">
+        <div data-role="header">
+            <h1>Play otb</h1>
+        </div>
+        <div data-role="main" class="ui-content">
+            <form>
+                <select name="variant" id="otb-variant">
+                    <option value="1">Standard</option>
+                    <option value="2">Chess960</option>
+                    <option value="5">Three-check</option>
+                </select>
+
+                <select name="color" id="otb-color">
+                    <option value="white">White</option>
+                    <option value="black">Black</option>
+                    <option value="random">Random</option>
+                </select>
+
+                <select name="timeMode" id="otb-timeMode">
+                    <option value="0">Unlimited</option>
+                    <option value="1" disabled>Real time</option>
+                </select>
+
+                <a href="#chessboard" class="ui-btn" id="createOTBGame-btn">Create Game</a>
+            </form>
+        </div>
+    </div>
+
+
     <div data-role="page" id="chessboard" data-theme="a">
 
         <div role="main">
@@ -307,6 +215,12 @@
 
     <script>
         var otb = function (source, target, piece, newPos, oldPos, orientation) {
+            console.log("New position: " + ChessBoard.objToFen(newPos));
+            console.log("Old position: " + ChessBoard.objToFen(oldPos));
+            console.log("Orientation: " + orientation);
+        };
+
+        var machine = function (source, target, piece, newPos, oldPos, orientation) {
             console.log("New position: " + ChessBoard.objToFen(newPos));
             console.log("Old position: " + ChessBoard.objToFen(oldPos));
             console.log("Orientation: " + orientation);
@@ -332,12 +246,12 @@
 
             window.board = ChessBoard('board', cfg);
 
-            if (cfg.onDrop != otb)
-            try {
-                syncFEN();
-            }
-            catch (err) {
-            }
+            if (cfg.onDrop == lichess)
+                try {
+                    syncFEN();
+                }
+                catch (err) {
+                }
 
             //--- end example JS ---
 
