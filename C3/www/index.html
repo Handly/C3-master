@@ -21,7 +21,7 @@
 
     <style>
         .ui-page-theme-a {
-            background: #ffffff;
+            background: #4286f4;
         }
 
         .hidden {
@@ -38,9 +38,16 @@
 <body>
     <div data-role="page" id="home" data-theme="a">
 
-        <div data-role="header">
-            <div style="text-align: center; margin: 0 auto;"><img style="width: 120px; padding: 10% 0 0 0;" src="img/Chess-icon[1].png"></div>
-            <h1>chesstronic</h1><br />
+
+
+
+        <div data-role="header" style="background-color: #4286f4; color:#ffffff;text-shadow:0 0 0;border: none;font-size:40px;position:fixed;left:0px;top:0px;width:100px;height:100px; overflow:hidden;z-index:100">
+
+            <h1 style="-ms-transform: rotate(-45deg); /* IE 9 */
+    -webkit-transform: rotate(-45deg); /* Chrome, Safari, Opera */
+    transform: rotate(-45deg);line-height:0px;width:100px">
+                &nbsp;&nbsp;&nbsp;&nbsp;Casdf
+            </h1>
         </div>
         <div data-role="panel" id="loginPanel">
             <form>
@@ -49,19 +56,80 @@
                 <button id="login-btn">Login</button>
             </form>
         </div>
-        <div data-role="main" class="ui-content">
-            <button onclick="loadGameList()">refresh</button>
-            <ul data-role="listview" data-theme="a" id="gameList"></ul>
+        <div data-role="main" class="ui-content" style="background-color: #1a1a1a;">
+            <!-- start example HTML -->
+
+            
+            <div style="margin-top: 150px;" id="gameList"></div>
+
+
+            <div style="width: 85%; height: 110px; background-color: #f48642; padding: 5px 10px 10px 10px; margin: auto; text-align: center; overflow: hidden">
+                <div id="board3" style="width: 125px; margin-top: -5px; margin-left: -10px; float: left"></div>
+                <h2 style="color: #ffffff; text-shadow: none">Stockfish lvl 6</h2>
+                <p style="color: #ffffff; text-shadow: none">local AI &middot; tap to play</p>
+            </div>
+
+            <div style="clear:both"></div><br />
+
+            <div style="width: 85%; height: 110px; background-color: #86f442; padding: 5px 10px 10px 10px; margin: auto; text-align: center; overflow: hidden">
+                <div id="board4" style="width: 125px; margin-top: -5px; margin-right: -10px; float: right"></div>
+                <h2 style="color: #ffffff; text-shadow: none">Lanyon</h2>
+                <p style="color: #ffffff; text-shadow: none">OTB &middot; tap to play</p>
+            </div>
+
+            <div style="clear:both"></div><br />
+
+            <a href="#machine" style="text-decoration:none">
+                <div style="width: 85%; height: 110px; background-color: #f48642; padding: 5px 10px 10px 10px; margin: auto; text-align: center; overflow: hidden">
+                    <br />
+                    <h2 style="color: #ffffff; text-shadow: none;">Play Local AI</h2>
+                </div>
+            </a>
+
+            <div style="clear:both"></div><br />
+
+            <a href="#otb" style="text-decoration:none">
+                <div style="width: 85%; height: 110px; background-color: #86f442; padding: 5px 10px 10px 10px; margin: auto; text-align: center; overflow: hidden">
+                    <br />
+                    <h2 style="color: #ffffff; text-shadow: none;">Record Game</h2>
+                </div>
+            </a>
+
+
+            <div style="clear:both"></div><br />
+            <!-- end example HTML -->
+            <div style="width: 85%;padding: 5px 10px 10px 10px; margin: auto; text-align: center; overflow: hidden"><span style="color: #ffffff; text-shadow: none;font-size:10px">CONNECT v1.0 - Handly LLC &copy; 2017</span></div>
+       
             <a href="#loginPanel" id="login-link" class="ui-btn ui-btn-inline ui-btn-icon-left ui-icon-myicon">Login</a>
             <button id="logout-btn" class="hidden ui-btn ui-btn-inline ui-btn-icon-left ui-icon-myicon">Logout</button>
-            <a href="#machine" class="ui-btn">Play Machine</a>
-            <a href="#otb" class="ui-btn">Record OTB Game</a>
             <a href="#bluetooth" class="ui-btn">Connect Board</a>
-        </div>
+
+            <button onclick="loadGameList()">refresh</button>
+
+
+         </div>
 
     </div>
 
+    <script>
+        var init66 = function () {
 
+            //--- start example JS ---
+
+            var board3 = ChessBoard('board3', {
+                position: 'r1k4r/p2nb1p1/2b4p/1p1n1p2/2PP4/3Q1NB1/1P3PPP/R5K1',
+                showNotation: false
+            });
+
+            var board4 = ChessBoard('board4', {
+                position: 'r1k4r/p2nb1p1/2b4p/1p1n1p2/2PP4/3Q1NB1/1P3PPP/R5K1',
+                showNotation: false
+            });
+            //--- end example JS ---
+
+        }; // end init()
+        $(document).ready(init66);
+    </script>
 
 
 
@@ -95,9 +163,20 @@
                     games = JSON.parse(xhttp.responseText).nowPlaying;
 
                     for (var i = 0; i < games.length; i++) {
-                        $("#gameList").append("<li><a href='#chessboard' class='current' data-gametype='lichess' data-gameid='" + games[i].fullId + "'>" + games[i].fullId + "</a></li>");
-                        $("#gameList").listview('refresh');
+                        if (i % 2 == 0)
+                            $("#gameList").append("<a style='text-decoration:none' href='#chessboard' class='current' data-gametype='lichess' data-gameid='" + games[i].fullId + "'><div style='width: 85%; height: 110px; background-color: #4286f4; padding: 5px 10px 10px 10px; margin: auto; text-align: center; overflow: hidden'><div id='board" + i + "' style='width: 125px; margin-top: -5px; margin-right: -10px; float: right'></div><h2 style='color: #ffffff; text-shadow: none'>" + games[i].opponent.username + "</h2><p style='color: #ffffff; text-shadow: none'>lichess &middot; tap to play</p></div></a><div style='clear:both'></div><br />");
+                        else
+                            $("#gameList").append("<a style='text-decoration:none' href='#chessboard' class='current' data-gametype='lichess' data-gameid='" + games[i].fullId + "'><div style='width: 85%; height: 110px; background-color: #4286f4; padding: 5px 10px 10px 10px; margin: auto; text-align: center; overflow: hidden'><div id='board" + i + "' style='width: 125px; margin-top: -5px; margin-left: -10px; float: left'></div><h2 style='color: #ffffff; text-shadow: none'>" + games[i].opponent.username + "</h2><p style='color: #ffffff; text-shadow: none'>lichess &middot; tap to play</p></div></a><div style='clear:both'></div><br />");
+
+                        var board = ChessBoard('board' + i, {
+                            position: games[i].fen,
+                            showNotation: false
+                        });
                     }
+
+
+
+
 
 
 
